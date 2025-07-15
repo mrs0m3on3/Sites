@@ -4,59 +4,56 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora de Nota</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f4f4f4;
+      text-align: center;
       margin: 0;
       padding: 20px;
-      text-align: center;
     }
 
     h1 {
       color: #333;
+      margin-bottom: 10px;
     }
 
     form {
       background: white;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       max-width: 500px;
-      margin: 20px auto;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      margin: 0 auto;
     }
 
     label {
       display: block;
-      font-weight: 600;
-      color: #555;
-      margin-bottom: 5px;
+      margin: 10px 0 5px;
       text-align: left;
+      color: #555;
+      font-weight: 500;
     }
 
-    input[type="number"] {
+    input[type="number"],
+    input[type="text"] {
       width: 100%;
       padding: 10px;
-      margin-bottom: 15px;
       font-size: 16px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 6px;
+      margin-bottom: 15px;
     }
 
     button {
-      background-color: #007BFF;
+      background: #007BFF;
       color: white;
       border: none;
-      padding: 12px 24px;
+      padding: 12px 20px;
       font-size: 16px;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: 0.3s ease;
       margin-top: 10px;
     }
 
@@ -64,17 +61,26 @@
       background-color: #0056b3;
     }
 
-    #resultado {
-      margin-top: 30px;
-      font-size: 18px;
-      color: #333;
+    .questao {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
     }
 
-    .questao-container {
-      border-top: 1px solid #eee;
-      padding-top: 10px;
-      margin-top: 20px;
+    .questao h3 {
       text-align: center;
+      color: #222;
+    }
+
+    #resultado {
+      margin-top: 25px;
+      padding: 15px;
+      font-size: 18px;
+      color: #333;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     @media (max-width: 600px) {
@@ -86,53 +92,61 @@
         padding: 15px;
       }
 
-      h1 {
-        font-size: 24px;
+      input, button {
+        font-size: 16px;
       }
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
+
 <body>
   <h1>Calculadora de Nota</h1>
 
-  <!-- Formulário para número de questões -->
-  <form onsubmit="iniciarProva(event)">
-    <label for="numeroQuestoes">Quantas questões tem a prova?</label>
-    <input type="number" id="numeroQuestoes" name="numeroQuestoes" min="1" required />
-    <button type="submit">Iniciar</button>
-  </form>
+  <form id="prova">
+    <label for="nomeProva">Nome da prova:</label>
+    <input type="text" id="nomeProva" placeholder="Ex: Prova de História" required />
 
-  <!-- Questões -->
-  <form id="secaoQuestoes" style="display:none;">
+    <label for="totalQuestoes">Número de questões:</label>
+    <input type="number" id="totalQuestoes" min="1" max="50" placeholder="Ex: 10" required />
+
+    <button type="button" onclick="gerarQuestoes()">Gerar Questões</button>
+
     <div id="questoes"></div>
-    <button type="button" onclick="processarProva()">Calcular Nota</button>
+
+    <!-- Botão de calcular nota escondido inicialmente -->
+    <div id="botaoNota" style="display: none;">
+      <button type="button" onclick="processarProva()">Calcular Nota</button>
+    </div>
   </form>
 
-  <!-- Resultado -->
   <div id="resultado"></div>
 
+
+
   <script>
-    let totalQuestoes = 0;
+    function calcularNota(totalAfirmativas, acertos) {
+      if (totalAfirmativas === 0) return 0.0;
+      let valorPorAfirmativa = 6.0 / totalAfirmativas;
+      return acertos * valorPorAfirmativa;
+    }
 
-    function iniciarProva(event) {
-      event.preventDefault();
+    function gerarQuestoes() {
+      const questoesDiv = document.getElementById("questoes");
+      const botaoNota = document.getElementById("botaoNota");
+      const totalQuestoes = parseInt(document.getElementById("totalQuestoes").value);
+      questoesDiv.innerHTML = "";
+      botaoNota.style.display = "none";
 
-      const inputTotal = document.getElementById("numeroQuestoes");
-      const totalQuestoesInput = parseInt(inputTotal.value);
-
-      if (isNaN(totalQuestoesInput) || totalQuestoesInput <= 0) {
+      if (isNaN(totalQuestoes) || totalQuestoes <= 0) {
         alert("Digite um número válido de questões.");
         return;
       }
 
-      totalQuestoes = totalQuestoesInput;
-
-      const questoesDiv = document.getElementById("questoes");
-      questoesDiv.innerHTML = "";
-
       for (let i = 1; i <= totalQuestoes; i++) {
         questoesDiv.innerHTML += `
-          <div class="questao-container">
+          <div class="questao">
             <h3>Questão ${i}</h3>
             <label for="afirmativas${i}">Total de afirmativas:</label>
             <input type="number" id="afirmativas${i}" min="1" required />
@@ -142,26 +156,22 @@
         `;
       }
 
-      document.getElementById("secaoQuestoes").style.display = "block";
-      document.getElementById("secaoQuestoes").scrollIntoView({ behavior: "smooth" });
-    }
-
-    function calcularNota(totalAfirmativas, acertos) {
-      if (totalAfirmativas === 0) return 0.0;
-      return (acertos * (6.0 / totalAfirmativas));
+      botaoNota.style.display = "block"; // Mostrar botão após gerar questões
     }
 
     function processarProva() {
+      const totalQuestoes = parseInt(document.getElementById("totalQuestoes").value);
+      const nomeProva = document.getElementById("nomeProva").value.trim();
       let totalAfirmativas = 0;
       let acertosTotais = 0;
       let questoesErradas = 0;
 
       for (let i = 1; i <= totalQuestoes; i++) {
-        let afirmativas = parseInt(document.getElementById(`afirmativas${i}`).value);
-        let acertos = parseInt(document.getElementById(`acertos${i}`).value);
+        const afirmativas = parseInt(document.getElementById(`afirmativas${i}`).value);
+        const acertos = parseInt(document.getElementById(`acertos${i}`).value);
 
         if (isNaN(afirmativas) || isNaN(acertos) || acertos < 0 || acertos > afirmativas) {
-          alert(`Erro na questão ${i}: valores inválidos!`);
+          alert(`Erro na questão ${i}: Verifique os valores.`);
           return;
         }
 
@@ -170,14 +180,82 @@
         if (acertos === 0) questoesErradas++;
       }
 
-      let nota = calcularNota(totalAfirmativas, acertosTotais);
+      const nota = calcularNota(totalAfirmativas, acertosTotais);
       document.getElementById("resultado").innerHTML = `
-        <h2>Resultado Final</h2>
+        <h2>Resultado: ${nomeProva || "Sem nome"}</h2>
         <p>Sua nota final é: <strong>${nota.toFixed(2)}</strong></p>
         <p>Você errou <strong>${questoesErradas}</strong> questão(ões).</p>
       `;
-      document.getElementById("resultado").scrollIntoView({ behavior: "smooth" });
+      
+      document.getElementById("baixarPDF").style.display = "inline-block";
+
     }
+
+    async function gerarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+    });
+
+    // Estilização
+    const nomeProva = document.getElementById("nomeProva").value || "Sem nome";
+    const resultados = document.querySelectorAll("#resultado .questao-resultado");
+    const notaFinalTexto = document.querySelector("#notaFinal").innerText;
+    const errosTexto = document.querySelector("#errosTotais").innerText;
+
+    // Fundo preto
+    doc.setFillColor(30, 30, 30);
+    doc.rect(0, 0, 210, 297, "F");
+
+    let y = 20;
+
+    // Nome da prova (centralizado)
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(`(${nomeProva.toUpperCase()})`, 105, y, { align: "center" });
+    y += 10;
+
+    // Resultados das questões
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(12);
+    resultados.forEach((el, index) => {
+        if (y > 270) {
+            doc.addPage();
+            doc.setFillColor(30, 30, 30);
+            doc.rect(0, 0, 210, 297, "F");
+            doc.setTextColor(255, 255, 255);
+            y = 20;
+        }
+        doc.text(`(${el.innerText})`, 20, y);
+        y += 10;
+    });
+
+    // Caixa com nota final
+    y += 10;
+    doc.setDrawColor(0, 255, 0);
+    doc.setTextColor(255, 255, 255);
+    doc.rect(20, y, 170, 20);
+    doc.text(`${notaFinalTexto}`, 25, y + 7);
+    doc.text(`${errosTexto}`, 25, y + 14);
+
+    // Salvar
+    doc.save(`${nomeProva.replace(/\s+/g, "_").toLowerCase()}_resultado.pdf`);
+}
+
+
+
   </script>
+
+  <button id="baixarPDF" onclick="gerarPDF()" style="display: none; margin-top: 10px;">
+    Baixar PDF
+  </button>
+
+  <footer style="text-align: center; font-size: 12px; color: #888; margin-top: 40px;">
+    Desenvolvido por ChatGPT em Parceria com Mrs0m3on3 · 2025
+</footer>
+
 </body>
 </html>
