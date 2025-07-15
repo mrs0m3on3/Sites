@@ -2,10 +2,9 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora de Nota</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     * {
       box-sizing: border-box;
@@ -15,91 +14,118 @@
       font-family: 'Poppins', sans-serif;
       background-color: #f4f4f4;
       margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 500px;
       padding: 20px;
+      text-align: center;
     }
 
-    h1, h2 {
-      text-align: center;
+    h1 {
       color: #333;
     }
 
     form {
-      background-color: white;
+      background: white;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .campo {
-      margin-bottom: 15px;
+      border-radius: 10px;
+      max-width: 500px;
+      margin: 20px auto;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     label {
       display: block;
       font-weight: 600;
-      margin-bottom: 6px;
-      color: #444;
+      color: #555;
+      margin-bottom: 5px;
+      text-align: left;
     }
 
-    input {
+    input[type="number"] {
       width: 100%;
       padding: 10px;
+      margin-bottom: 15px;
       font-size: 16px;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 5px;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
       background-color: #007BFF;
       color: white;
       border: none;
-      border-radius: 6px;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 5px;
       cursor: pointer;
-      margin-top: 20px;
+      transition: 0.3s ease;
+      margin-top: 10px;
     }
 
     button:hover {
       background-color: #0056b3;
     }
 
-    .questao-container {
-      margin-top: 30px;
-      border-top: 1px solid #eee;
-      padding-top: 20px;
-    }
-
     #resultado {
       margin-top: 30px;
-      text-align: center;
-      font-size: 16px;
+      font-size: 18px;
       color: #333;
     }
+
+    .questao-container {
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      form {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
   </style>
+</head>
+<body>
+  <h1>Calculadora de Nota</h1>
+
+  <!-- Formulário para número de questões -->
+  <form onsubmit="iniciarProva(event)">
+    <label for="numeroQuestoes">Quantas questões tem a prova?</label>
+    <input type="number" id="numeroQuestoes" name="numeroQuestoes" min="1" required />
+    <button type="submit">Iniciar</button>
+  </form>
+
+  <!-- Questões -->
+  <form id="secaoQuestoes" style="display:none;">
+    <div id="questoes"></div>
+    <button type="button" onclick="processarProva()">Calcular Nota</button>
+  </form>
+
+  <!-- Resultado -->
+  <div id="resultado"></div>
 
   <script>
     let totalQuestoes = 0;
 
-    function iniciarProva() {
-      const inputTotal = document.getElementById("numeroQuestoes");
-      totalQuestoes = parseInt(inputTotal.value);
+    function iniciarProva(event) {
+      event.preventDefault();
 
-      if (isNaN(totalQuestoes) || totalQuestoes <= 0) {
+      const inputTotal = document.getElementById("numeroQuestoes");
+      const totalQuestoesInput = parseInt(inputTotal.value);
+
+      if (isNaN(totalQuestoesInput) || totalQuestoesInput <= 0) {
         alert("Digite um número válido de questões.");
         return;
       }
+
+      totalQuestoes = totalQuestoesInput;
 
       const questoesDiv = document.getElementById("questoes");
       questoesDiv.innerHTML = "";
@@ -108,26 +134,21 @@
         questoesDiv.innerHTML += `
           <div class="questao-container">
             <h3>Questão ${i}</h3>
-            <div class="campo">
-              <label for="afirmativas${i}">Total de afirmativas:</label>
-              <input type="number" id="afirmativas${i}" min="1" required>
-            </div>
-            <div class="campo">
-              <label for="acertos${i}">Acertos:</label>
-              <input type="number" id="acertos${i}" min="0" required>
-            </div>
+            <label for="afirmativas${i}">Total de afirmativas:</label>
+            <input type="number" id="afirmativas${i}" min="1" required />
+            <label for="acertos${i}">Acertos:</label>
+            <input type="number" id="acertos${i}" min="0" required />
           </div>
         `;
       }
 
       document.getElementById("secaoQuestoes").style.display = "block";
-      document.getElementById("scrollToQuestoes").scrollIntoView({ behavior: 'smooth' });
+      document.getElementById("secaoQuestoes").scrollIntoView({ behavior: "smooth" });
     }
 
     function calcularNota(totalAfirmativas, acertos) {
       if (totalAfirmativas === 0) return 0.0;
-      let valorPorAfirmativa = 6.0 / totalAfirmativas;
-      return acertos * valorPorAfirmativa;
+      return (acertos * (6.0 / totalAfirmativas));
     }
 
     function processarProva() {
@@ -140,7 +161,7 @@
         let acertos = parseInt(document.getElementById(`acertos${i}`).value);
 
         if (isNaN(afirmativas) || isNaN(acertos) || acertos < 0 || acertos > afirmativas) {
-          alert(`Erro na questão ${i}: valores inválidos.`);
+          alert(`Erro na questão ${i}: valores inválidos!`);
           return;
         }
 
@@ -155,29 +176,8 @@
         <p>Sua nota final é: <strong>${nota.toFixed(2)}</strong></p>
         <p>Você errou <strong>${questoesErradas}</strong> questão(ões).</p>
       `;
+      document.getElementById("resultado").scrollIntoView({ behavior: "smooth" });
     }
   </script>
-</head>
-<body>
-  <div class="container">
-    <h1>Calculadora de Nota</h1>
-
-    <form>
-      <div class="campo">
-        <label for="numeroQuestoes">Quantas questões tem a prova?</label>
-        <input type="number" id="numeroQuestoes" min="1" required />
-      </div>
-      <button type="button" onclick="iniciarProva()">Iniciar Cálculo</button>
-    </form>
-
-    <div id="scrollToQuestoes"></div>
-
-    <form id="secaoQuestoes" style="display: none;">
-      <div id="questoes"></div>
-      <button type="button" onclick="processarProva()">Calcular Nota</button>
-    </form>
-
-    <div id="resultado"></div>
-  </div>
 </body>
 </html>
